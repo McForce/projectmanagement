@@ -26,6 +26,8 @@
 		<members>Contractor__c.Project_Addition_Date__c</members>
 		
 		<!-- Contractor_Billing__c Object Custom Fields -->
+		<!-- Contractor__c is a Lookup to Contractor__c -->
+		<members>Contractor_Billing__c.Contractor__c</members>
 		<!-- Contractor_Invoice__c is a Lookup to Contractor_Invoice__c -->
 		<members>Contractor_Billing__c.Contractor_Invoice__c</members>
 		<!-- Last_Billed_Up_To__c is a Date field -->
