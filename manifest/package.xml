@@ -9,12 +9,56 @@
 		<members>Contractor_Invoice__c</members>
 		<members>Contractor__c</members>
 		<members>Opportunity</members>
+		<members>Project__c</members>
 		<name>CustomObject</name>
 	</types>
 	<types>
-		<!-- Add Custom Fields -->
+		<!-- Contractor__c Object Custom Fields -->
+		<!-- Budget_Percentage__c is a Percentage field -->
 		<members>Contractor__c.Budget_Percentage__c</members>
-		<members>Project__c.Account__c</members>
+		<!-- Contact__c is a Lookup to Contact -->
+		<members>Contractor__c.Contact__c</members>
+		<!-- Cost__c is a Currency field -->
+		<members>Contractor__c.Cost__c</members>
+		<!-- Project__c is a Lookup to Project -->
+		<members>Contractor__c.Project__c</members>
+		<!-- Project_Addition_Date__c is a Date field -->
+		<members>Contractor__c.Project_Addition_Date__c</members>
+		
+		<!-- Contractor_Billing__c Object Custom Fields -->
+		<!-- Contractor_Invoice__c is a Lookup to Contractor_Invoice__c -->
+		<members>Contractor_Billing__c.Contractor_Invoice__c</members>
+		<!-- Last_Billed_Up_To__c is a Date field -->
+		<members>Contractor_Billing__c.Last_Billed_Up_To__c</members>
+		
+		<!-- Contractor_Changes__c Object Custom Fields -->
+		<!-- Change_Type__c is a Picklist with values: Add, Remove, Reallocation -->
+		<members>Contractor_Changes__c.Change_Type__c</members>
+		<!-- Contact__c is a Lookup to Contact -->
+		<members>Contractor_Changes__c.Contact__c</members>
+		<!-- Contractor__c is a Lookup to Contractor__c -->
+		<members>Contractor_Changes__c.Contractor__c</members>
+		<!-- Cost__c is a Currency field -->
+		<members>Contractor_Changes__c.Cost__c</members>
+		<!-- Opportunity__c is a Lookup to Opportunity__c -->
+		<members>Contractor_Changes__c.Opportunity__c</members>
+		
+		<!-- Contractor_Invoice__c Object Custom Fields -->
+		<!-- Last_Billed_Up_To__c is a Date field -->
+		<members>Contractor_Invoice__c.Last_Billed_Up_To__c</members>
+		
+		<!-- Opportunity Object Custom Fields -->
+		<!-- Bill_Effective_Date__c is a Date field -->
+		<members>Opportunity.Bill_Effective_Date__c</members>
+		<!-- Project__c is a Lookup to Project__c -->
+		<members>Opportunity.Project__c</members>
+		
+		<!-- Project__c Object Custom Fields -->
+		<!-- Budget_Cost__c is a Currency field -->
+		<members>Project__c.Budget_Cost__c</members>
+		<!-- Project_Start_Date__c is a Date field -->
+		<members>Project__c.Project_Start_Date__c</members>
+		
 		<name>CustomField</name>
 	</types>
 	<version>63.0</version>
