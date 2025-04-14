@@ -34,6 +34,8 @@
 		<!-- Contractor_Changes__c Object Custom Fields -->
 		<!-- Change_Type__c is a Picklist with values: Add, Remove, Reallocation -->
 		<members>Contractor_Changes__c.Change_Type__c</members>
+		<!-- Project__c is a Lookup to Project__c -->
+		<members>Contractor_Changes__c.Project__c</members>
 		<!-- Contact__c is a Lookup to Contact -->
 		<members>Contractor_Changes__c.Contact__c</members>
 		<!-- Contractor__c is a Lookup to Contractor__c -->
