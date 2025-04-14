@@ -11,5 +11,11 @@
 		<members>Opportunity</members>
 		<name>CustomObject</name>
 	</types>
+	<types>
+		<!-- Add Custom Fields -->
+		<members>Contractor__c.Budget_Percentage__c</members>
+		<members>Project__c.Account__c</members>
+		<name>CustomField</name>
+	</types>
 	<version>63.0</version>
 </Package>
