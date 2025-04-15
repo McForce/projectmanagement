@@ -1,0 +1,58 @@
+<template>
+    <lightning-card title="Project Contractors" icon-name="standard:contact">
+        <div class="slds-m-around_medium">
+            <!-- Error handling -->
+            <template if:true={error}>
+                <div class="slds-text-color_error">
+                    An error occurred while loading contractors: {error.body.message}
+                </div>
+            </template>
+
+            <!-- No contractors message -->
+            <template if:true={hasContractors}>
+                <div class="slds-table_header-fixed_container" style="height: 300px;">
+                    <div class="slds-scrollable_y" style="height: 100%;">
+                        <table class="slds-table slds-table_bordered slds-table_header-fixed">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th class="slds-text-title_caps" scope="col">
+                                        <div class="slds-truncate" title="Contractor Name">Contractor Name</div>
+                                    </th>
+                                    <th class="slds-text-title_caps" scope="col">
+                                        <div class="slds-truncate" title="Last Billed Date">Last Billed Date</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={contractors} for:item="contractor">
+                                    <tr key={contractor.contractorName}>
+                                        <td>
+                                            <div class="slds-truncate" title={contractor.contractorName}>
+                                                {contractor.contractorName}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="slds-truncate" title={contractor.lastBilledDate}>
+                                                <lightning-formatted-date-time 
+                                                    value={contractor.lastBilledDate}
+                                                    year="numeric"
+                                                    month="long"
+                                                    day="numeric">
+                                                </lightning-formatted-date-time>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+            <template if:false={hasContractors}>
+                <div class="slds-text-align_center slds-m-around_medium">
+                    No contractors found for this project.
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
