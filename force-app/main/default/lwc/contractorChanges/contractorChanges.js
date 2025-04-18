@@ -49,17 +49,28 @@ export default class ContractorChanges extends LightningElement {
 
     // Handle inline editing for the Cost field
     handleEdit(event) {
-        const { fieldName, recordId, value } = event.detail; // Get the edited field details
-        if (fieldName === 'cost') { // Only handle the "Cost" field
-            const newCost = parseFloat(value); // Parse the new cost value
+        console.log('Edit event triggered:', event.detail); // Debugging line
+        const { fieldName, recordId, value } = event.detail;
+        if (fieldName === 'cost') {
+            const newCost = parseFloat(value);
             updateContractorChange({ contractorChangeId: recordId, newCost, opportunityAmount: this.opportunityAmount })
                 .then(() => {
-                    // Show success message
                     this.dispatchEvent(
                         new ShowToastEvent({
                             title: 'Success',
                             message: 'Cost updated successfully',
                             variant: 'success',
+                        })
+                    );
+                    return refreshApex(this.wiredContractorChangesResult);
+                })
+                .catch((error) => {
+                    console.error('Error updating cost:', error); // Debugging line
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Error updating cost',
+                            message: error.body.message,
+                            variant: 'error',
                         })
                     );
                     // Refresh the Contractor Changes list
