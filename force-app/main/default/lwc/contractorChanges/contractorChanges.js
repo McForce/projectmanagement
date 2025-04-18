@@ -1,18 +1,25 @@
-// Step 1: Add these imports at the top of the file
+// Imports
 import { LightningElement, api, wire } from 'lwc';
 import getContractorChanges from '@salesforce/apex/OpportunityContractorController.getContractorChanges';
 import getOpportunityAmount from '@salesforce/apex/OpportunityContractorController.getOpportunityAmount';
 import updateContractorChange from '@salesforce/apex/OpportunityContractorController.updateContractorChange';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-// Step 2: Ensure the main class looks like this
 export default class ContractorChanges extends LightningElement {
     @api recordId; // The Opportunity record ID
     contractorChanges; // Holds the list of Contractor Changes
     opportunityAmount; // Holds the Opportunity Amount
     error;
 
-    // Step 3: Fetch Contractor Changes using the Apex method
+    // Columns for the datatable
+    columns = [
+        { label: 'Name', fieldName: 'name', type: 'text' },
+        { label: 'Cost', fieldName: 'cost', type: 'currency', editable: true },
+        { label: 'Budget Percentage', fieldName: 'budgetPercentage', type: 'percent' },
+        { label: 'Change Type', fieldName: 'changeType', type: 'text' }
+    ];
+
+    // Fetch Contractor Changes
     @wire(getContractorChanges, { opportunityId: '$recordId' })
     wiredContractorChanges({ error, data }) {
         if (data) {
@@ -24,7 +31,7 @@ export default class ContractorChanges extends LightningElement {
         }
     }
 
-    // Step 4: Fetch Opportunity Amount using another Apex method
+    // Fetch Opportunity Amount
     @wire(getOpportunityAmount, { opportunityId: '$recordId' })
     wiredOpportunityAmount({ error, data }) {
         if (data) {
@@ -36,10 +43,10 @@ export default class ContractorChanges extends LightningElement {
         }
     }
 
-    // Step 5: Handle inline editing for the Cost field
+    // Handle inline editing for the Cost field
     handleEdit(event) {
         const { fieldName, recordId, value } = event.detail; // Get the edited field details
-        if (fieldName === 'Cost') {
+        if (fieldName === 'cost') {
             const newCost = parseFloat(value); // Parse the new cost value
             updateContractorChange({ contractorChangeId: recordId, newCost, opportunityAmount: this.opportunityAmount })
                 .then(() => {
@@ -65,12 +72,12 @@ export default class ContractorChanges extends LightningElement {
         }
     }
 
-    // Step 6: Helper to check if there are Contractor Changes
+    // Helper to check if there are Contractor Changes
     get hasContractorChanges() {
         return this.contractorChanges && this.contractorChanges.length > 0;
     }
 
-    // Step 7: Helper to format the Opportunity Amount
+    // Helper to format the Opportunity Amount
     get formattedOpportunityAmount() {
         return this.opportunityAmount ? `$${this.opportunityAmount.toFixed(2)}` : '';
     }

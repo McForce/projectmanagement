@@ -1,70 +1,21 @@
 <template>
     <lightning-card title="Contractor Changes" icon-name="standard:contract">
         <div class="slds-m-around_medium">
-            <!-- Error handling -->
+            <!-- Error Handling -->
             <template if:true={error}>
                 <div class="slds-text-color_error">
-                    An error occurred while loading contractor changes: {error.body.message}
+                    An error occurred: {error.body.message}
                 </div>
             </template>
 
             <!-- Contractor Changes Table -->
             <template if:true={hasContractorChanges}>
-                <div class="slds-table_header-fixed_container" style="height: 300px;">
-                    <div class="slds-scrollable_y" style="height: 100%;">
-                        <table class="slds-table slds-table_bordered slds-table_header-fixed">
-                            <thead>
-                                <tr class="slds-line-height_reset">
-                                    <th class="slds-text-title_caps" scope="col">
-                                        <div class="slds-truncate" title="Name">Name</div>
-                                    </th>
-                                    <th class="slds-text-title_caps" scope="col">
-                                        <div class="slds-truncate" title="Cost">Cost</div>
-                                    </th>
-                                    <th class="slds-text-title_caps" scope="col">
-                                        <div class="slds-truncate" title="Budget Percentage">Budget Percentage</div>
-                                    </th>
-                                    <th class="slds-text-title_caps" scope="col">
-                                        <div class="slds-truncate" title="Change Type">Change Type</div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template for:each={contractorChanges} for:item="change">
-                                    <tr key={change.id}>
-                                        <td>
-                                            <div class="slds-truncate" title={change.name}>
-                                                {change.name}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="slds-truncate" title={change.cost}>
-                                                <lightning-formatted-number 
-                                                    value={change.cost} 
-                                                    format-style="currency" 
-                                                    currency-code="USD">
-                                                </lightning-formatted-number>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="slds-truncate" title={change.budgetPercentage}>
-                                                <lightning-formatted-number 
-                                                    value={change.budgetPercentage} 
-                                                    format-style="percent">
-                                                </lightning-formatted-number>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="slds-truncate" title={change.changeType}>
-                                                {change.changeType}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <lightning-datatable
+                    key-field="id"
+                    data={contractorChanges}
+                    columns={columns}
+                    oncellchange={handleEdit}>
+                </lightning-datatable>
             </template>
 
             <!-- No Records Found -->
@@ -73,6 +24,11 @@
                     No contractor changes found for this opportunity.
                 </div>
             </template>
+
+            <!-- Opportunity Amount -->
+            <div class="slds-m-top_medium">
+                <strong>Opportunity Amount:</strong> {formattedOpportunityAmount}
+            </div>
         </div>
     </lightning-card>
 </template>
