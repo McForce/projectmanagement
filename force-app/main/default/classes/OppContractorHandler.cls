@@ -1,53 +1,58 @@
-public class OppContractorHandler {
-    
-    public static void handleAfterInsert(List<Opportunity> newOpportunities) {
-        Set<Id> projectIds = new Set<Id>();
-        Map<Id, Opportunity> contractorChangeOpps = new Map<Id, Opportunity>();
+public with sharing class ProjectContractorController {
+    @AuraEnabled(cacheable=true)
+    public static List<ContractorWrapper> getProjectContractors(Id projectId) {
+        List<ContractorWrapper> wrappers = new List<ContractorWrapper>();
         
-        // Filter opportunities of type "Contractor Changes" and collect Project IDs
-        for(Opportunity opp : newOpportunities) {
-            if(opp.Type == 'Contractor Changes' && opp.Project__c != null) {
-                projectIds.add(opp.Project__c);
-                contractorChangeOpps.put(opp.Project__c, opp);
-            }
-        }
-        
-        if(projectIds.isEmpty()) {
-            return;
-        }
-        
-        // Query existing Contractors for the related Projects
-        List<Contractor__c> existingContractors = [
-            SELECT Id, Project__c, Contact__c, Cost__c, Budget_Percentage__c
+        // Get all contractors for the project
+        List<Contractor__c> contractors = [
+            SELECT Id, Contact__r.Name
             FROM Contractor__c
-            WHERE Project__c IN :projectIds
+            WHERE Project__c = :projectId
+            ORDER BY Contact__r.Name
         ];
         
-        List<Contractor_Changes__c> contractorChangesToInsert = new List<Contractor_Changes__c>();
+        // Create a map of Contractor Id to its wrapper
+        Map<Id, ContractorWrapper> contractorMap = new Map<Id, ContractorWrapper>();
+        for(Contractor__c contractor : contractors) {
+            ContractorWrapper wrapper = new ContractorWrapper();
+            wrapper.contractorId = contractor.Id; // Fix: Assign contractorId
+            wrapper.contractorName = contractor.Contact__r.Name;
+            wrapper.lastBilledDate = null;
+            contractorMap.put(contractor.Id, wrapper);
+            wrappers.add(wrapper);
+        }
         
-        // Create Contractor Changes records for each Contractor
-        for(Contractor__c contractor : existingContractors) {
-            if(contractorChangeOpps.containsKey(contractor.Project__c)) {
-                Contractor_Changes__c change = new Contractor_Changes__c(
-                    Project__c = contractor.Project__c,
-                    Contact__c = contractor.Contact__c,
-                    Contractor__c = contractor.name,
-                    Budget_Percentage__c = contractor.Budget_Percentage__c,
-                    Cost__c = contractor.Cost__c,
-                    Opportunity__c = contractorChangeOpps.get(contractor.Project__c).Id
-                );
-                contractorChangesToInsert.add(change);
+        // Query Contractor Billing records separately
+        List<Contractor_Billing__c> billings = [
+            SELECT Contractor__c, Last_Billed_Up_To__c 
+            FROM Contractor_Billing__c 
+            WHERE Contractor__c IN :contractorMap.keySet()
+            ORDER BY Last_Billed_Up_To__c DESC
+        ];
+        
+        // Update the wrappers with billing information
+        Map<Id, Date> contractorLastBillingDates = new Map<Id, Date>();
+        for(Contractor_Billing__c billing : billings) {
+            // Fix: Ensure only the most recent billing date is considered
+            if(!contractorLastBillingDates.containsKey(billing.Contractor__c)) {
+                contractorLastBillingDates.put(billing.Contractor__c, billing.Last_Billed_Up_To__c);
             }
         }
         
-        if(!contractorChangesToInsert.isEmpty()) {
-            try {
-                insert contractorChangesToInsert;
-            } catch(Exception e) {
-                // Handle any errors here
-                System.debug('Error creating Contractor Changes records: ' + e.getMessage());
-                // You might want to add custom error handling here
+        // Update wrappers with billing dates
+        for(ContractorWrapper wrapper : wrappers) {
+            if(contractorLastBillingDates.containsKey(wrapper.contractorId)) {
+                wrapper.lastBilledDate = contractorLastBillingDates.get(wrapper.contractorId);
             }
         }
+        
+        return wrappers;
+    }
+    
+    // Wrapper class to hold the data for the UI
+    public class ContractorWrapper {
+        @AuraEnabled public Id contractorId {get; set;}
+        @AuraEnabled public String contractorName {get; set;}
+        @AuraEnabled public Date lastBilledDate {get; set;}
     }
 }

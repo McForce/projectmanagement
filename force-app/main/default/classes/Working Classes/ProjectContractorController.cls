@@ -15,6 +15,7 @@ public with sharing class ProjectContractorController {
         Map<Id, ContractorWrapper> contractorMap = new Map<Id, ContractorWrapper>();
         for(Contractor__c contractor : contractors) {
             ContractorWrapper wrapper = new ContractorWrapper();
+            wrapper.contractorId = contractor.Id; // Fix: Assign contractorId
             wrapper.contractorName = contractor.Contact__r.Name;
             wrapper.lastBilledDate = null;
             contractorMap.put(contractor.Id, wrapper);
@@ -32,6 +33,7 @@ public with sharing class ProjectContractorController {
         // Update the wrappers with billing information
         Map<Id, Date> contractorLastBillingDates = new Map<Id, Date>();
         for(Contractor_Billing__c billing : billings) {
+            // Fix: Ensure only the most recent billing date is considered
             if(!contractorLastBillingDates.containsKey(billing.Contractor__c)) {
                 contractorLastBillingDates.put(billing.Contractor__c, billing.Last_Billed_Up_To__c);
             }
