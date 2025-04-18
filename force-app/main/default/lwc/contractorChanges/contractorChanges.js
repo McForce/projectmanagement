@@ -1,5 +1,5 @@
 // Imports
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire, track } from 'lwc';
 import getContractorChanges from '@salesforce/apex/OpportunityContractorController.getContractorChanges';
 import getOpportunityAmount from '@salesforce/apex/OpportunityContractorController.getOpportunityAmount';
 import updateContractorChange from '@salesforce/apex/OpportunityContractorController.updateContractorChange';
@@ -9,6 +9,7 @@ import { refreshApex } from '@salesforce/apex';
 // Main Class
 export default class ContractorChanges extends LightningElement {
     @api recordId; // The Opportunity record ID
+    @track draftValues = []; // Track draft values for inline editing
     contractorChanges; // Holds the list of Contractor Changes
     opportunityAmount; // Holds the Opportunity Amount
     error;
@@ -25,7 +26,7 @@ export default class ContractorChanges extends LightningElement {
     // Fetch Contractor Changes
     @wire(getContractorChanges, { opportunityId: '$recordId' })
     wiredContractorChanges(result) {
-        this.wiredContractorChangesResult = result; // Store the result for refreshApex
+        this.wiredContractorChangesResult = result;
         if (result.data) {
             this.contractorChanges = result.data;
             this.error = undefined;
@@ -47,46 +48,41 @@ export default class ContractorChanges extends LightningElement {
         }
     }
 
-    // Handle inline editing for the Cost field
-    handleEdit(event) {
-        console.log('Edit event triggered:', event.detail); // Debugging line
-        const { fieldName, recordId, value } = event.detail;
-        if (fieldName === 'cost') {
-            const newCost = parseFloat(value);
-            updateContractorChange({ contractorChangeId: recordId, newCost, opportunityAmount: this.opportunityAmount })
-                .then(() => {
-                    this.dispatchEvent(
-                        new ShowToastEvent({
-                            title: 'Success',
-                            message: 'Cost updated successfully',
-                            variant: 'success',
-                        })
-                    );
-                    return refreshApex(this.wiredContractorChangesResult);
-                })
-                .catch((error) => {
-                    console.error('Error updating cost:', error); // Debugging line
-                    this.dispatchEvent(
-                        new ShowToastEvent({
-                            title: 'Error updating cost',
-                            message: error.body.message,
-                            variant: 'error',
-                        })
-                    );
-                    // Refresh the Contractor Changes list
-                    return refreshApex(this.wiredContractorChangesResult);
-                })
-                .catch((error) => {
-                    // Show error message
-                    this.dispatchEvent(
-                        new ShowToastEvent({
-                            title: 'Error updating cost',
-                            message: error.body.message,
-                            variant: 'error',
-                        })
-                    );
-                });
-        }
+    // Handle save event
+    handleSave(event) {
+        const draftValues = event.detail.draftValues;
+        
+        // Process each changed record
+        const promises = draftValues.map(draft => {
+            return updateContractorChange({ 
+                contractorChangeId: draft.id,
+                newCost: draft.cost,
+                opportunityAmount: this.opportunityAmount
+            });
+        });
+
+        // Execute all updates
+        Promise.all(promises)
+            .then(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Changes saved successfully',
+                        variant: 'success'
+                    })
+                );
+                this.draftValues = []; // Clear all draft values
+                return refreshApex(this.wiredContractorChangesResult); // Refresh the data
+            })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: error.body.message,
+                        variant: 'error'
+                    })
+                );
+            });
     }
 
     // Helper to check if there are Contractor Changes

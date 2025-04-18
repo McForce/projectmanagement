@@ -14,7 +14,8 @@
                     key-field="id"
                     data={contractorChanges}
                     columns={columns}
-                    oncellchange={handleEdit}>
+                    onsave={handleSave}
+                    draft-values={draftValues}>
                 </lightning-datatable>
             </template>
 
