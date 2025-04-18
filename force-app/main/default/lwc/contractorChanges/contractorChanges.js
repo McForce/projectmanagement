@@ -4,12 +4,15 @@ import getContractorChanges from '@salesforce/apex/OpportunityContractorControll
 import getOpportunityAmount from '@salesforce/apex/OpportunityContractorController.getOpportunityAmount';
 import updateContractorChange from '@salesforce/apex/OpportunityContractorController.updateContractorChange';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { refreshApex } from '@salesforce/apex';
 
+// Main Class
 export default class ContractorChanges extends LightningElement {
     @api recordId; // The Opportunity record ID
     contractorChanges; // Holds the list of Contractor Changes
     opportunityAmount; // Holds the Opportunity Amount
     error;
+    wiredContractorChangesResult; // For refreshApex
 
     // Columns for the datatable
     columns = [
@@ -21,12 +24,13 @@ export default class ContractorChanges extends LightningElement {
 
     // Fetch Contractor Changes
     @wire(getContractorChanges, { opportunityId: '$recordId' })
-    wiredContractorChanges({ error, data }) {
-        if (data) {
-            this.contractorChanges = data;
+    wiredContractorChanges(result) {
+        this.wiredContractorChangesResult = result; // Store the result for refreshApex
+        if (result.data) {
+            this.contractorChanges = result.data;
             this.error = undefined;
-        } else if (error) {
-            this.error = error;
+        } else if (result.error) {
+            this.error = result.error;
             this.contractorChanges = undefined;
         }
     }
@@ -46,10 +50,11 @@ export default class ContractorChanges extends LightningElement {
     // Handle inline editing for the Cost field
     handleEdit(event) {
         const { fieldName, recordId, value } = event.detail; // Get the edited field details
-        if (fieldName === 'cost') {
+        if (fieldName === 'cost') { // Only handle the "Cost" field
             const newCost = parseFloat(value); // Parse the new cost value
             updateContractorChange({ contractorChangeId: recordId, newCost, opportunityAmount: this.opportunityAmount })
                 .then(() => {
+                    // Show success message
                     this.dispatchEvent(
                         new ShowToastEvent({
                             title: 'Success',
@@ -58,9 +63,10 @@ export default class ContractorChanges extends LightningElement {
                         })
                     );
                     // Refresh the Contractor Changes list
-                    return refreshApex(this.wiredContractorChanges);
+                    return refreshApex(this.wiredContractorChangesResult);
                 })
                 .catch((error) => {
+                    // Show error message
                     this.dispatchEvent(
                         new ShowToastEvent({
                             title: 'Error updating cost',
